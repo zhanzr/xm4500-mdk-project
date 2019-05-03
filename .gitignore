@@ -1,0 +1,13 @@
+*.lst
+*.o
+*.elf
+*.log
+*.i
+*.map
+*.lnp
+*.list
+*.obj
+*.d
+*.hex
+*.bin
+*.uvguix.*
