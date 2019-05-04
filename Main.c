@@ -2,9 +2,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include <xmc4500.h>
 #include <xmc_scu.h>
+
+#include "EventRecorder.h"
 
 #ifndef HZ
 #define	HZ	1000
@@ -18,12 +21,7 @@ static uint8_t cmd;
 uint8_t g_tmp_uart_rx_buf;
 __IO uint32_t g_ticks;
 
-void SysTick_Handler(void) {
-	g_ticks ++;
-}
-
-void myUART_callback(uint32_t event)
-{
+void myUART_callback(uint32_t event) {
     switch (event)
     {
     case ARM_USART_EVENT_RECEIVE_COMPLETE:  
@@ -59,7 +57,29 @@ int stdout_putchar (int ch) {
 	return ch;
 }
 
+static uint32_t tmpDts;
+static float tmpCel;
+static float tmpV13;
+static float tmpV33;
+
+static double M_PI;
+
+#define SIGNAL_AMPLIT	5.0
+static __IO float tmp_ms_cycle;
+static __IO float signal_1;
+static __IO float signal_2;
+static __IO float signal_3;
+static __IO float signal_4;
+
+static double special_value;
+
 int main(void) {
+	M_PI = acos(-1);
+//5 * math.tan((499/1000)*math.pi)*(1000/2-499)/(1000/2)
+	special_value = SIGNAL_AMPLIT * tan(M_PI*(HZ/2-1)/HZ)*(HZ/2-(HZ/2-1))/(HZ/2);
+	
+  EventRecorderInitialize(EventRecordAll, 1);
+	
 	/*Initialize the UART driver */
 	UARTdrv->Initialize(myUART_callback);
 	/*Power up the UART peripheral */
@@ -89,19 +109,49 @@ int main(void) {
   while (1) {
 		printf("ticks: %u\n", g_ticks);
 		//T_DTS = (RESULT - 605) / 2.05 [°C]
-		uint32_t tmpDts = XMC_SCU_GetTemperatureMeasurement();
-		float tmpCel = (tmpDts-605)/2.05;
+		tmpDts = XMC_SCU_GetTemperatureMeasurement();
+		tmpCel = (tmpDts-605)/2.05;
 		printf("%f\n", tmpCel);
 
-		float tmpV13 = XMC_SCU_POWER_GetEVR13Voltage();
-		float tmpV33 = XMC_SCU_POWER_GetEVR33Voltage();
+		tmpV13 = XMC_SCU_POWER_GetEVR13Voltage();
+		tmpV33 = XMC_SCU_POWER_GetEVR33Voltage();
 		printf("%f %f\n", tmpV13, tmpV33);
 		
+		printf("%u MHz PI=%f\n", SystemCoreClock/1000000, M_PI);
 		uint32_t tmp_ticks = g_ticks;
-		while((tmp_ticks + 2000) > g_ticks) {
-			__nop();
+		while((tmp_ticks + 1000) > g_ticks) {
+//			__wfi();
 		}
 		
 		XMC_SCU_StartTemperatureMeasurement();		
+	}
+}
+
+void SysTick_Handler(void) {
+	g_ticks ++;
+
+	tmp_ms_cycle++;
+	if((float)HZ == tmp_ms_cycle) {
+		tmp_ms_cycle = 0;
+	}
+	
+	//Simply increase
+	signal_1 = SIGNAL_AMPLIT * (tmp_ms_cycle/HZ);
+	
+	//Triangle 
+	signal_2 = (tmp_ms_cycle<(HZ/2))?
+	((SIGNAL_AMPLIT/(HZ/2)) * tmp_ms_cycle):
+	(((SIGNAL_AMPLIT/(HZ/2)) * (HZ/2+HZ-tmp_ms_cycle))-SIGNAL_AMPLIT);
+	
+	//Sine
+	signal_3 = SIGNAL_AMPLIT * (sinf((2*M_PI) * tmp_ms_cycle/HZ) + 1)/2;
+	
+	//tangium
+	if(tmp_ms_cycle == (HZ/2)) {
+		signal_4 = special_value;
+	} else {
+		signal_4 = (tmp_ms_cycle<(HZ/2))?
+		(SIGNAL_AMPLIT * tanf((M_PI) * tmp_ms_cycle/HZ) * (HZ/2-tmp_ms_cycle))/(HZ/2):
+		(SIGNAL_AMPLIT * tanf(M_PI - (M_PI) * tmp_ms_cycle/HZ) * (tmp_ms_cycle-HZ/2))/(HZ/2);
 	}
 }
