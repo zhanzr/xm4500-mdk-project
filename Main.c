@@ -1,7 +1,5 @@
 #include "Driver_USART.h"
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <math.h>
 
 #include <xmc4500.h>
@@ -9,9 +7,7 @@
 
 #include "EventRecorder.h"
 
-#ifndef HZ
-#define	HZ	1000
-#endif
+#include "custom_def.h"
 
 /* USART Driver */
 extern ARM_DRIVER_USART Driver_USART2;
@@ -73,7 +69,26 @@ static __IO float signal_4;
 
 static double special_value;
 
+void test_div_flash(void)
+{
+//	printf("%s %p\n", __func__, test_div_flash);
+
+	for(uint32_t i=0; i<TEST_LOOP_N; ++i)
+	{
+		__nop();
+	}
+}
+
+extern void test_div_sram(void);
+
 int main(void) {
+	uint32_t tmp_cyccnt = 0;
+	uint32_t tmp_cpicnt = 0;
+	uint32_t tmp_exccnt = 0;
+	uint32_t tmp_sleepcnt = 0;
+	uint32_t tmp_lsucnt = 0;
+	uint32_t tmp_foldcnt = 0;
+
 	M_PI = acos(-1);
 //5 * math.tan((499/1000)*math.pi)*(1000/2-499)/(1000/2)
 	special_value = SIGNAL_AMPLIT * tan(M_PI*(HZ/2-1)/HZ)*(HZ/2-(HZ/2-1))/(HZ/2);
@@ -96,7 +111,7 @@ int main(void) {
 	XMC_SCU_EnableTemperatureSensor();
 	XMC_SCU_StartTemperatureMeasurement();
 	
-	SysTick_Config(SystemCoreClock / HZ);
+//	SysTick_Config(SystemCoreClock / HZ);
 
 	printf("XMC4500 ARMCC Test @ %u Hz\n", SystemCoreClock);
   UARTdrv->Receive(&cmd, 1);
@@ -118,9 +133,31 @@ int main(void) {
 		printf("%f %f\n", tmpV13, tmpV33);
 		
 		printf("%u MHz PI=%f\n", SystemCoreClock/1000000, M_PI);
+
+		tmp_cyccnt = DWT->CYCCNT;
+		tmp_cpicnt = DWT->CPICNT;
+		tmp_exccnt = DWT->EXCCNT;
+		tmp_sleepcnt = DWT->SLEEPCNT;
+		tmp_lsucnt = DWT->LSUCNT;
+		tmp_foldcnt = DWT->FOLDCNT;
+		
+		//CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT
+		printf("DWT CYCCNT:%u\n", tmp_cyccnt);
+		printf("DWT CPICNT:%u\n", tmp_cpicnt);
+		printf("DWT EXCCNT:%u\n", tmp_exccnt);
+		printf("DWT SLEEPCNT:%u\n", tmp_sleepcnt);
+		printf("DWT LSUCNT:%u\n", tmp_lsucnt);
+		printf("DWT FOLDCNT:%u\n", tmp_foldcnt);
+		printf("CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT = %u\n",
+		tmp_cyccnt - tmp_cpicnt -tmp_exccnt - tmp_sleepcnt - tmp_lsucnt + tmp_foldcnt);
+		
+		test_div_flash();
+		
+		test_div_sram();
+		
 		uint32_t tmp_ticks = g_ticks;
 		while((tmp_ticks + 1000) > g_ticks) {
-//			__wfi();
+			__wfi();
 		}
 		
 		XMC_SCU_StartTemperatureMeasurement();		
