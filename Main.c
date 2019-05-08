@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include <errno.h>
+
 #include <xmc4500.h>
 #include <xmc_scu.h>
 
@@ -79,6 +81,58 @@ void test_div_flash(void)
 	}
 }
 
+extern uint32_t asm_get_heap_base(void);
+extern uint32_t asm_get_heap_size(void);
+
+void test_alloca(void) {
+	uint8_t* ptr0;
+	uint8_t* ptr1;
+	size_t tmp_align;
+	size_t tmp_size;
+	int ret;
+	#ifdef __MICROLIB
+	printf("MICROLIB\n");
+	#else
+	printf("STDLIB\n");
+	#endif
+	
+	printf("heap_base:%08X, heap_size:%8X\n",
+	asm_get_heap_base(), asm_get_heap_size());
+	
+	printf("LibC Ver:%s %i\n", __C_library_version_string(), __C_library_version_number());
+	printf("getenv %s -> %s\n", "PATH", getenv("PATH"));
+	//Test posix_memalign
+	{
+		tmp_align = 0x100;
+		tmp_size = 0x18;
+		ret = posix_memalign((void**)&ptr0, tmp_align, tmp_size);
+		printf("(%i) posix_memalign 0x%X [0x%X] -> 0x%p\n",ret, tmp_align, tmp_size, ptr0);
+		
+		tmp_align = 0x200;
+		tmp_size = 0x28;	
+		ret = posix_memalign((void**)&ptr1, tmp_align, tmp_size);
+		printf("(%i) posix_memalign 0x%X [0x%X] -> 0x%p\n",ret, tmp_align, tmp_size, ptr1);
+		free(&ptr0);	
+		free(&ptr1);
+	}
+	
+	//Test normal malloc
+	{
+		tmp_align = 0x100;
+		tmp_size = 0x18;
+		ptr0 = malloc(tmp_size);
+		printf("malloc [0x%X] -> %p\n", tmp_size, ptr0);
+		
+		tmp_align = 0x200;
+		tmp_size = 0x28;	
+		ptr1 = malloc(tmp_size);
+		printf("malloc [0x%X] -> %p\n", tmp_size, ptr1);
+		
+		free(&ptr0);	
+		free(&ptr1);
+	}
+}
+
 extern void test_div_sram(void);
 
 int main(void) {
@@ -111,7 +165,7 @@ int main(void) {
 	XMC_SCU_EnableTemperatureSensor();
 	XMC_SCU_StartTemperatureMeasurement();
 	
-//	SysTick_Config(SystemCoreClock / HZ);
+	SysTick_Config(SystemCoreClock / HZ);
 
 	printf("XMC4500 ARMCC Test @ %u Hz\n", SystemCoreClock);
   UARTdrv->Receive(&cmd, 1);
@@ -142,18 +196,19 @@ int main(void) {
 		tmp_foldcnt = DWT->FOLDCNT;
 		
 		//CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT
-		printf("DWT CYCCNT:%u\n", tmp_cyccnt);
-		printf("DWT CPICNT:%u\n", tmp_cpicnt);
-		printf("DWT EXCCNT:%u\n", tmp_exccnt);
-		printf("DWT SLEEPCNT:%u\n", tmp_sleepcnt);
-		printf("DWT LSUCNT:%u\n", tmp_lsucnt);
-		printf("DWT FOLDCNT:%u\n", tmp_foldcnt);
-		printf("CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT = %u\n",
-		tmp_cyccnt - tmp_cpicnt -tmp_exccnt - tmp_sleepcnt - tmp_lsucnt + tmp_foldcnt);
+//		printf("DWT CYCCNT:%u\n", tmp_cyccnt);
+//		printf("DWT CPICNT:%u\n", tmp_cpicnt);
+//		printf("DWT EXCCNT:%u\n", tmp_exccnt);
+//		printf("DWT SLEEPCNT:%u\n", tmp_sleepcnt);
+//		printf("DWT LSUCNT:%u\n", tmp_lsucnt);
+//		printf("DWT FOLDCNT:%u\n", tmp_foldcnt);
+//		printf("CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT = %u\n",
+//		tmp_cyccnt - tmp_cpicnt -tmp_exccnt - tmp_sleepcnt - tmp_lsucnt + tmp_foldcnt);
 		
-		test_div_flash();
-		
-		test_div_sram();
+//		test_div_flash();
+//		
+//		test_div_sram();
+		test_alloca();
 		
 		uint32_t tmp_ticks = g_ticks;
 		while((tmp_ticks + 1000) > g_ticks) {
@@ -167,28 +222,28 @@ int main(void) {
 void SysTick_Handler(void) {
 	g_ticks ++;
 
-	tmp_ms_cycle++;
-	if((float)HZ == tmp_ms_cycle) {
-		tmp_ms_cycle = 0;
-	}
-	
-	//Simply increase
-	signal_1 = SIGNAL_AMPLIT * (tmp_ms_cycle/HZ);
-	
-	//Triangle 
-	signal_2 = (tmp_ms_cycle<(HZ/2))?
-	((SIGNAL_AMPLIT/(HZ/2)) * tmp_ms_cycle):
-	(((SIGNAL_AMPLIT/(HZ/2)) * (HZ/2+HZ-tmp_ms_cycle))-SIGNAL_AMPLIT);
-	
-	//Sine
-	signal_3 = SIGNAL_AMPLIT * (sinf((2*M_PI) * tmp_ms_cycle/HZ) + 1)/2;
-	
-	//tangium
-	if(tmp_ms_cycle == (HZ/2)) {
-		signal_4 = special_value;
-	} else {
-		signal_4 = (tmp_ms_cycle<(HZ/2))?
-		(SIGNAL_AMPLIT * tanf((M_PI) * tmp_ms_cycle/HZ) * (HZ/2-tmp_ms_cycle))/(HZ/2):
-		(SIGNAL_AMPLIT * tanf(M_PI - (M_PI) * tmp_ms_cycle/HZ) * (tmp_ms_cycle-HZ/2))/(HZ/2);
-	}
+//	tmp_ms_cycle++;
+//	if((float)HZ == tmp_ms_cycle) {
+//		tmp_ms_cycle = 0;
+//	}
+//	
+//	//Simply increase
+//	signal_1 = SIGNAL_AMPLIT * (tmp_ms_cycle/HZ);
+//	
+//	//Triangle 
+//	signal_2 = (tmp_ms_cycle<(HZ/2))?
+//	((SIGNAL_AMPLIT/(HZ/2)) * tmp_ms_cycle):
+//	(((SIGNAL_AMPLIT/(HZ/2)) * (HZ/2+HZ-tmp_ms_cycle))-SIGNAL_AMPLIT);
+//	
+//	//Sine
+//	signal_3 = SIGNAL_AMPLIT * (sinf((2*M_PI) * tmp_ms_cycle/HZ) + 1)/2;
+//	
+//	//tangium
+//	if(tmp_ms_cycle == (HZ/2)) {
+//		signal_4 = special_value;
+//	} else {
+//		signal_4 = (tmp_ms_cycle<(HZ/2))?
+//		(SIGNAL_AMPLIT * tanf((M_PI) * tmp_ms_cycle/HZ) * (HZ/2-tmp_ms_cycle))/(HZ/2):
+//		(SIGNAL_AMPLIT * tanf(M_PI - (M_PI) * tmp_ms_cycle/HZ) * (tmp_ms_cycle-HZ/2))/(HZ/2);
+//	}
 }

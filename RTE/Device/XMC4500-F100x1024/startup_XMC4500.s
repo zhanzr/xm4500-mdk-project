@@ -69,7 +69,7 @@ __initial_sp
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Heap_Size       EQU     0x00000200
+Heap_Size       EQU     0x00002000
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
@@ -634,5 +634,23 @@ __user_initial_stackheap
 
                 ENDIF
 
+;Get heap base
+	ALIGN        ; Ensures alignment.
+asm_get_heap_base   FUNCTION     ; Without the ALIGN directive this might not be word-aligned.
+	EXPORT asm_get_heap_base
+		            
+	LDR     R0, =  Heap_Mem
+	bx lr
+	
+	ENDP
 
+;Get heap size
+	ALIGN        ; Ensures alignment.
+asm_get_heap_size   FUNCTION     ; Without the ALIGN directive this might not be word-aligned.
+	EXPORT asm_get_heap_size
+		            
+	LDR     R0, =  Heap_Size
+	bx lr
+	
+	ENDP
                 END
