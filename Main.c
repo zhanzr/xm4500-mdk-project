@@ -9,6 +9,8 @@
 
 #include "EventRecorder.h"
 
+#include "RTE_Components.h"
+
 #include "custom_def.h"
 
 /* USART Driver */
@@ -84,6 +86,8 @@ void test_div_flash(void)
 extern uint32_t asm_get_heap_base(void);
 extern uint32_t asm_get_heap_size(void);
 
+const char g_big_str[] = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest";
+
 void test_alloca(void) {
 	uint8_t* ptr0;
 	uint8_t* ptr1;
@@ -134,7 +138,7 @@ void test_alloca(void) {
 }
 
 extern void test_div_sram(void);
-
+#define TEST_BAUDRATE	(5529600)
 int main(void) {
 	uint32_t tmp_cyccnt = 0;
 	uint32_t tmp_cpicnt = 0;
@@ -157,7 +161,7 @@ int main(void) {
 	UARTdrv->Control(ARM_USART_MODE_ASYNCHRONOUS |
 									 ARM_USART_DATA_BITS_8 |
 									 ARM_USART_PARITY_NONE |
-									 ARM_USART_STOP_BITS_1 , 921600);
+									 ARM_USART_STOP_BITS_1 , TEST_BAUDRATE);
 	 
 	/* Enable the Transmitter line */
 	UARTdrv->Control (ARM_USART_CONTROL_TX, 1);
@@ -188,12 +192,12 @@ int main(void) {
 		
 		printf("%u MHz PI=%f\n", SystemCoreClock/1000000, M_PI);
 
-		tmp_cyccnt = DWT->CYCCNT;
-		tmp_cpicnt = DWT->CPICNT;
-		tmp_exccnt = DWT->EXCCNT;
-		tmp_sleepcnt = DWT->SLEEPCNT;
-		tmp_lsucnt = DWT->LSUCNT;
-		tmp_foldcnt = DWT->FOLDCNT;
+//		tmp_cyccnt = DWT->CYCCNT;
+//		tmp_cpicnt = DWT->CPICNT;
+//		tmp_exccnt = DWT->EXCCNT;
+//		tmp_sleepcnt = DWT->SLEEPCNT;
+//		tmp_lsucnt = DWT->LSUCNT;
+//		tmp_foldcnt = DWT->FOLDCNT;
 		
 		//CYCCNT - CPICNT - EXCCNT - SLEEPCNT - LSUCNT + FOLDCNT
 //		printf("DWT CYCCNT:%u\n", tmp_cyccnt);
@@ -208,11 +212,33 @@ int main(void) {
 //		test_div_flash();
 //		
 //		test_div_sram();
-		test_alloca();
-		
+//		test_alloca();
+
+  #ifdef RTE_Compiler_IO_STDOUT_User
+	printf("RTE_Compiler_IO_STDOUT_User\n");
+	#endif
+	
+  #ifdef RTE_Compiler_IO_STDOUT_EVR
+	printf("RTE_Compiler_IO_STDOUT_EVR\n");
+	#endif
+
+  #ifdef RTE_Compiler_IO_STDOUT_ITM
+	printf("RTE_Compiler_IO_STDOUT_ITM\n");
+	#endif
+	
+	
+	printf("length=%u\n", strlen(g_big_str));
+	uint32_t tmp_tick = g_ticks;
+	printf(g_big_str);
+	uint32_t duration_tick = g_ticks - tmp_tick;
+	printf("\n duration: %u\t\n", duration_tick);
+  #ifdef RTE_Compiler_IO_STDOUT_User
+  printf("Baudrate @ %u\n", TEST_BAUDRATE);
+	#endif
+	
 		uint32_t tmp_ticks = g_ticks;
 		while((tmp_ticks + 1000) > g_ticks) {
-			__wfi();
+//			__wfi();
 		}
 		
 		XMC_SCU_StartTemperatureMeasurement();		

@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>0Y??辸0Y??辸0Y?</Name>
+          <Name>▌??髒▌??髒▌?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -145,7 +145,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>JL2CM3</Key>
-          <Name>-U551017773 -O78 -S2 -ZTIFSpeedSel5000 -A0 -C0 -JU1 -JI127.0.0.1 -JP0 -RST0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO1011 -TC120000000 -TP21 -TDS8077 -TDT3 -TDC1F -TIEFFFFFFFF -TIP8 -TB5 -TFE0 -FO11 -FD20000000 -FC1000 -FN2 -FF0XMC4500_1024.FLM -FS0C000000 -FL0100000 -FP0($$Device:XMC4500-F100x1024$Flash\XMC4500_1024.FLM) -FF1XMC4500c_1024.FLM -FS18000000 -FL1100000 -FP1($$Device:XMC4500-F100x1024$Flash\XMC4500c_1024.FLM)</Name>
+          <Name>-U551017773 -O78 -S2 -ZTIFSpeedSel5000 -A0 -C0 -JU1 -JI127.0.0.1 -JP0 -RST0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO3 -TC120000000 -TP21 -TDS8077 -TDT3 -TDC1F -TIEFFFFFFFF -TIP8 -TB5 -TFE0 -FO11 -FD20000000 -FC1000 -FN2 -FF0XMC4500_1024.FLM -FS0C000000 -FL0100000 -FP0($$Device:XMC4500-F100x1024$Flash\XMC4500_1024.FLM) -FF1XMC4500c_1024.FLM -FS18000000 -FL1100000 -FP1($$Device:XMC4500-F100x1024$Flash\XMC4500c_1024.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -153,7 +153,24 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN2 -FF0XMC4500_1024 -FS0C000000 -FL0100000 -FF1XMC4500c_1024 -FS18000000 -FL1100000 -FP0($$Device:XMC4500-F100x1024$Flash\XMC4500_1024.FLM) -FP1($$Device:XMC4500-F100x1024$Flash\XMC4500c_1024.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>239</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134235424</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\UART_transmit\main.c\239</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -239,7 +256,7 @@
         <aLa>1</aLa>
         <aPa1>0</aPa1>
         <AscS4>0</AscS4>
-        <aSer4>0</aSer4>
+        <aSer4>1</aSer4>
         <StkLoc>0</StkLoc>
         <TrcWin>0</TrcWin>
         <newCpu>0</newCpu>
