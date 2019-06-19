@@ -16,6 +16,12 @@
  */
 #define CMSIS_device_header "XMC4500.h"
 
+/*  ARM.FreeRTOS::RTOS:Config:FreeRTOS:10.2.0 */
+#define RTE_RTOS_FreeRTOS_CONFIG        /* RTOS FreeRTOS Config for FreeRTOS API */
+/*  ARM.FreeRTOS::RTOS:Core:Cortex-M:10.2.0 */
+#define RTE_RTOS_FreeRTOS_CORE          /* RTOS FreeRTOS Core */
+/*  ARM.FreeRTOS::RTOS:Heap:Heap_4:10.2.0 */
+#define RTE_RTOS_FreeRTOS_HEAP_4        /* RTOS FreeRTOS Heap 4 */
 /*  Infineon::CMSIS Driver:USART:2.11 */
 #define RTE_Drivers_USART
 /*  Infineon::Device:RTE_Device:1.1.0 */

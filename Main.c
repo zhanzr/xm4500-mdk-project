@@ -7,11 +7,22 @@
 #include <xmc4500.h>
 #include <xmc_scu.h>
 
+#include <arm_math.h>
+
 #include "EventRecorder.h"
 
 #include "RTE_Components.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#include "timers.h"
+
 #include "custom_def.h"
+
+#include "sine_generator.h"
+#include "low_pass_filter.h"
 
 /* USART Driver */
 extern ARM_DRIVER_USART Driver_USART2;
@@ -73,71 +84,148 @@ static __IO float signal_4;
 
 static double special_value;
 
-void test_div_flash(void)
-{
-//	printf("%s %p\n", __func__, test_div_flash);
-
-	for(uint32_t i=0; i<TEST_LOOP_N; ++i)
-	{
-		__nop();
-	}
-}
-
 extern uint32_t asm_get_heap_base(void);
 extern uint32_t asm_get_heap_size(void);
 
-const char g_big_str[] = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest";
+TaskHandle_t g_filter_task_handle;
+TaskHandle_t g_disturb_gen_task_handle;
+TaskHandle_t g_noise_gen_task_handle;
+TaskHandle_t g_sine_gen_task_handle;
+TaskHandle_t g_sync_task_handle;
 
-void test_alloca(void) {
-	uint8_t* ptr0;
-	uint8_t* ptr1;
-	size_t tmp_align;
-	size_t tmp_size;
-	int ret;
-	#ifdef __MICROLIB
-	printf("MICROLIB\n");
-	#else
-	printf("STDLIB\n");
-	#endif
-	
-	printf("heap_base:%08X, heap_size:%8X\n",
-	asm_get_heap_base(), asm_get_heap_size());
-	
-	printf("LibC Ver:%s %i\n", __C_library_version_string(), __C_library_version_number());
-	printf("getenv %s -> %s\n", "PATH", getenv("PATH"));
-	//Test posix_memalign
-	{
-		tmp_align = 0x100;
-		tmp_size = 0x18;
-		ret = posix_memalign((void**)&ptr0, tmp_align, tmp_size);
-		printf("(%i) posix_memalign 0x%X [0x%X] -> 0x%p\n",ret, tmp_align, tmp_size, ptr0);
-		
-		tmp_align = 0x200;
-		tmp_size = 0x28;	
-		ret = posix_memalign((void**)&ptr1, tmp_align, tmp_size);
-		printf("(%i) posix_memalign 0x%X [0x%X] -> 0x%p\n",ret, tmp_align, tmp_size, ptr1);
-		free(&ptr0);	
-		free(&ptr1);
-	}
-	
-	//Test normal malloc
-	{
-		tmp_align = 0x100;
-		tmp_size = 0x18;
-		ptr0 = malloc(tmp_size);
-		printf("malloc [0x%X] -> %p\n", tmp_size, ptr0);
-		
-		tmp_align = 0x200;
-		tmp_size = 0x28;	
-		ptr1 = malloc(tmp_size);
-		printf("malloc [0x%X] -> %p\n", tmp_size, ptr1);
-		
-		free(&ptr0);	
-		free(&ptr1);
-	}
+//-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
+//
+// <e>Oscillator Configuration
+// <i>This is a demonstration on how to use the Configuration Wizard to create an easy configuration menu.
+
+#define ENABLE_CONFIG 1
+// =============================
+//   <o>Oscillator Sampling Frequency [Hz] <1000-10000>
+//   <i> Set the oscillator sampling frequency.
+//   <i> Default: 5000  (5 KHz)
+#define SAMPLING_FREQ 1000  // generating task (5 KHz)
+
+//   <o>Noise Frequency [Hz] <50-10000>
+//   <i> Set the noise signal frequency.
+//   <i> Default: 1500 Hz
+#define NOISE_FREQ    50  // noise (2 KHz)
+
+//   <o>Signal Frequency [Hz] <10-1000>
+//   <i> Set the signal frequency.
+//   <i> Default: 330 Hz
+#define SIGNAL_FREQ    10  // disturbed signal (250 Hz)
+
+// </e>
+//------------- <<< end of configuration section >>> -----------------------
+
+
+sine_generator_q15_t Signal_set;
+sine_generator_q15_t Noise_set;
+
+q15_t sine;
+q15_t noise;
+q15_t disturbed;
+q15_t filtered;
+
+/*
+*********************************************************************
+*
+* Sine Generator task
+*
+*********************************************************************
+*/
+
+void sine_gen(void) {
+  while(1) { 
+		xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on entry. */
+                         UINT32_MAX, /* Reset the notification value to 0 on exit. */
+                         NULL,
+                         portMAX_DELAY );  /* Block indefinitely. */
+    sine = sine_calc_sample_q15(&Signal_set) / 2;
+
+		xTaskNotify( g_noise_gen_task_handle, 0, eNoAction );
+  }
 }
 
-extern void test_div_sram(void);
+/*
+*********************************************************************
+*
+* Noise Sine Generator task
+*
+*********************************************************************
+*/
+
+void noise_gen(void) {
+  while(1) {
+		xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on entry. */
+                         UINT32_MAX, /* Reset the notification value to 0 on exit. */
+                         NULL,
+                         portMAX_DELAY );  /* Block indefinitely. */
+    noise = sine_calc_sample_q15(&Noise_set) / 6;
+		xTaskNotify( g_disturb_gen_task_handle, 0, eNoAction );
+  }
+}
+
+/*
+*********************************************************************
+*
+* 1st Disturb Generator task
+*
+* Adds Noise to Signal
+*
+*********************************************************************
+*/
+
+void disturb_gen(void) {
+  while(1) {
+		xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on entry. */
+                         UINT32_MAX, /* Reset the notification value to 0 on exit. */
+                         NULL,
+                         portMAX_DELAY );  /* Block indefinitely. */
+    disturbed = sine + noise;
+		xTaskNotify( g_filter_task_handle, 0, eNoAction );
+  }
+}
+
+/*
+*********************************************************************
+*
+* Filter task
+*
+* Extract Signal from disturbed signal by filtering out Noise
+*
+*********************************************************************
+*/
+
+void filter_tsk(void) {
+  while(1) {
+		xTaskNotifyWait( 0x00,      /* Don't clear any notification bits on entry. */
+                         UINT32_MAX, /* Reset the notification value to 0 on exit. */
+                         NULL,
+                         portMAX_DELAY );  /* Block indefinitely. */
+    filtered = low_pass_filter(&disturbed); 
+  }
+}
+
+/*
+*********************************************************************
+*
+* Synchronization task
+*
+* Periodically starts the signal generation process
+*
+*********************************************************************
+*/
+
+void sync_tsk(void) {
+	TickType_t xLastWakeTime;
+  while(1) {
+		xLastWakeTime = xTaskGetTickCount ();    
+		xTaskNotify( g_sine_gen_task_handle, 0, eNoAction );
+    vTaskDelayUntil( &xLastWakeTime, 1 / portTICK_PERIOD_MS );
+  }
+}
+
 #define TEST_BAUDRATE	(5529600)
 int main(void) {
 	uint32_t tmp_cyccnt = 0;
@@ -146,10 +234,6 @@ int main(void) {
 	uint32_t tmp_sleepcnt = 0;
 	uint32_t tmp_lsucnt = 0;
 	uint32_t tmp_foldcnt = 0;
-
-	M_PI = acos(-1);
-//5 * math.tan((499/1000)*math.pi)*(1000/2-499)/(1000/2)
-	special_value = SIGNAL_AMPLIT * tan(M_PI*(HZ/2-1)/HZ)*(HZ/2-(HZ/2-1))/(HZ/2);
 	
   EventRecorderInitialize(EventRecordAll, 1);
 	
@@ -169,7 +253,7 @@ int main(void) {
 	XMC_SCU_EnableTemperatureSensor();
 	XMC_SCU_StartTemperatureMeasurement();
 	
-	SysTick_Config(SystemCoreClock / HZ);
+//	SysTick_Config(SystemCoreClock / HZ);
 
 	printf("XMC4500 ARMCC Test @ %u Hz\n", SystemCoreClock);
   UARTdrv->Receive(&cmd, 1);
@@ -179,6 +263,62 @@ int main(void) {
 			__CORTEX_M, __FPU_USED);
 	printf("Boot Mode:%u\n", XMC_SCU_GetBootMode());
 	
+	  // compute coefficients for IIR sine generators
+  sine_generator_init_q15(&Signal_set, SIGNAL_FREQ, SAMPLING_FREQ);
+  sine_generator_init_q15(&Noise_set, NOISE_FREQ, SAMPLING_FREQ);
+  printf ("Sine Generator Initialised\n\r");
+
+  // initialize low pass filter
+  low_pass_filter_init();
+  printf ("Low Pass Filter Initialised\n\r");
+
+  // initialize the timing system to activate the four tasks 
+  // of the application program
+		xTaskCreate((TaskFunction_t)filter_tsk,
+							(const portCHAR *)"filter_tsk",
+							384,
+							NULL,
+							2,
+							&g_filter_task_handle);							
+	printf ("filter_tsk Task Initialised\n\r");
+
+		xTaskCreate((TaskFunction_t)disturb_gen,
+							(const portCHAR *)"disturb_gen",
+							384,
+							NULL,
+							2,
+							&g_disturb_gen_task_handle);
+	printf ("disturb_gen Task Initialised\n\r");
+								xTaskCreate((TaskFunction_t)noise_gen,
+							(const portCHAR *)"noise_gen",
+							384,
+							NULL,
+							2,
+							&g_noise_gen_task_handle);
+  printf ("noise_gen Task Initialised\n\r");
+							
+								xTaskCreate((TaskFunction_t)sine_gen,
+							(const portCHAR *)"sine_gen",
+							384,
+							NULL,
+							2,
+							&g_sine_gen_task_handle);
+							
+  printf ("sine_gen Task Initialised\n\r");
+								xTaskCreate((TaskFunction_t)sync_tsk,
+							(const portCHAR *)"sync_tsk",
+							384,
+							NULL,
+							2,
+							&g_sync_task_handle);							
+  printf ("sync_tsk Task Initialised\n\r");
+  printf ("Application Running\n\r");
+	
+  /* Start scheduler */  
+	vTaskStartScheduler();
+	
+//Should never come here
+							
   while (1) {
 		printf("ticks: %u\n", g_ticks);
 		//T_DTS = (RESULT - 605) / 2.05 [°C]
@@ -226,16 +366,6 @@ int main(void) {
 	printf("RTE_Compiler_IO_STDOUT_ITM\n");
 	#endif
 	
-	
-	printf("length=%u\n", strlen(g_big_str));
-	uint32_t tmp_tick = g_ticks;
-	printf(g_big_str);
-	uint32_t duration_tick = g_ticks - tmp_tick;
-	printf("\n duration: %u\t\n", duration_tick);
-  #ifdef RTE_Compiler_IO_STDOUT_User
-  printf("Baudrate @ %u\n", TEST_BAUDRATE);
-	#endif
-	
 		uint32_t tmp_ticks = g_ticks;
 		while((tmp_ticks + 1000) > g_ticks) {
 //			__wfi();
@@ -245,31 +375,3 @@ int main(void) {
 	}
 }
 
-void SysTick_Handler(void) {
-	g_ticks ++;
-
-//	tmp_ms_cycle++;
-//	if((float)HZ == tmp_ms_cycle) {
-//		tmp_ms_cycle = 0;
-//	}
-//	
-//	//Simply increase
-//	signal_1 = SIGNAL_AMPLIT * (tmp_ms_cycle/HZ);
-//	
-//	//Triangle 
-//	signal_2 = (tmp_ms_cycle<(HZ/2))?
-//	((SIGNAL_AMPLIT/(HZ/2)) * tmp_ms_cycle):
-//	(((SIGNAL_AMPLIT/(HZ/2)) * (HZ/2+HZ-tmp_ms_cycle))-SIGNAL_AMPLIT);
-//	
-//	//Sine
-//	signal_3 = SIGNAL_AMPLIT * (sinf((2*M_PI) * tmp_ms_cycle/HZ) + 1)/2;
-//	
-//	//tangium
-//	if(tmp_ms_cycle == (HZ/2)) {
-//		signal_4 = special_value;
-//	} else {
-//		signal_4 = (tmp_ms_cycle<(HZ/2))?
-//		(SIGNAL_AMPLIT * tanf((M_PI) * tmp_ms_cycle/HZ) * (HZ/2-tmp_ms_cycle))/(HZ/2):
-//		(SIGNAL_AMPLIT * tanf(M_PI - (M_PI) * tmp_ms_cycle/HZ) * (tmp_ms_cycle-HZ/2))/(HZ/2);
-//	}
-}
