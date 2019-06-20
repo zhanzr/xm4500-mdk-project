@@ -143,7 +143,7 @@ void sine_gen(void) {
                          portMAX_DELAY );  /* Block indefinitely. */
     sine = sine_calc_sample_q15(&Signal_set) / 2;
 
-		xTaskNotify( g_noise_gen_task_handle, 0, eNoAction );
+//		xTaskNotify( g_noise_gen_task_handle, 0, eNoAction );
   }
 }
 
@@ -219,10 +219,25 @@ void filter_tsk(void) {
 
 void sync_tsk(void) {
 	TickType_t xLastWakeTime;
-  while(1) {
-		xLastWakeTime = xTaskGetTickCount ();    
+  while(1) {			
+		XMC_SCU_StartTemperatureMeasurement();		
+		
+//		xLastWakeTime = xTaskGetTickCount ();    
+//		xTaskNotify( g_sine_gen_task_handle, 0, eNoAction );
+//    vTaskDelayUntil( &xLastWakeTime, 10 / portTICK_PERIOD_MS );
+		
+		printf("t:%u\n", xTaskGetTickCount());
+		//T_DTS = (RESULT - 605) / 2.05 [°C]
+		tmpDts = XMC_SCU_GetTemperatureMeasurement();
+		tmpCel = (tmpDts-605)/2.05;
+		printf("%.1f\n", tmpCel);
+
+		tmpV13 = XMC_SCU_POWER_GetEVR13Voltage();
+		tmpV33 = XMC_SCU_POWER_GetEVR33Voltage();
+		printf("%.1f %.1f\n", tmpV13, tmpV33);	
+
+    vTaskDelay(10);		
 		xTaskNotify( g_sine_gen_task_handle, 0, eNoAction );
-    vTaskDelayUntil( &xLastWakeTime, 1 / portTICK_PERIOD_MS );
   }
 }
 
@@ -269,47 +284,47 @@ int main(void) {
   printf ("Sine Generator Initialised\n\r");
 
   // initialize low pass filter
-  low_pass_filter_init();
-  printf ("Low Pass Filter Initialised\n\r");
+//  low_pass_filter_init();
+//  printf ("Low Pass Filter Initialised\n\r");
 
   // initialize the timing system to activate the four tasks 
   // of the application program
-		xTaskCreate((TaskFunction_t)filter_tsk,
-							(const portCHAR *)"filter_tsk",
-							384,
-							NULL,
-							2,
-							&g_filter_task_handle);							
-	printf ("filter_tsk Task Initialised\n\r");
+//		xTaskCreate((TaskFunction_t)filter_tsk,
+//							(const portCHAR *)"filter_tsk",
+//							384,
+//							NULL,
+//							2,
+//							&g_filter_task_handle);							
+//	printf ("filter_tsk Task Initialised\n\r");
 
-		xTaskCreate((TaskFunction_t)disturb_gen,
-							(const portCHAR *)"disturb_gen",
-							384,
-							NULL,
-							2,
-							&g_disturb_gen_task_handle);
-	printf ("disturb_gen Task Initialised\n\r");
-								xTaskCreate((TaskFunction_t)noise_gen,
-							(const portCHAR *)"noise_gen",
-							384,
-							NULL,
-							2,
-							&g_noise_gen_task_handle);
-  printf ("noise_gen Task Initialised\n\r");
+//		xTaskCreate((TaskFunction_t)disturb_gen,
+//							(const portCHAR *)"disturb_gen",
+//							384,
+//							NULL,
+//							2,
+//							&g_disturb_gen_task_handle);
+//	printf ("disturb_gen Task Initialised\n\r");
+//								xTaskCreate((TaskFunction_t)noise_gen,
+//							(const portCHAR *)"noise_gen",
+//							384,
+//							NULL,
+//							2,
+//							&g_noise_gen_task_handle);
+//  printf ("noise_gen Task Initialised\n\r");
 							
 								xTaskCreate((TaskFunction_t)sine_gen,
 							(const portCHAR *)"sine_gen",
-							384,
+							256,
 							NULL,
-							2,
-							&g_sine_gen_task_handle);
-							
+							tskIDLE_PRIORITY+1,
+							&g_sine_gen_task_handle);							
   printf ("sine_gen Task Initialised\n\r");
+							
 								xTaskCreate((TaskFunction_t)sync_tsk,
 							(const portCHAR *)"sync_tsk",
-							384,
+							256,
 							NULL,
-							2,
+							tskIDLE_PRIORITY+2,
 							&g_sync_task_handle);							
   printf ("sync_tsk Task Initialised\n\r");
   printf ("Application Running\n\r");
