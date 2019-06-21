@@ -11,3 +11,5 @@
 *.hex
 *.bin
 *.uvguix.*
+*.txt
+Objects/*
