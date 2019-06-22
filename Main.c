@@ -24,6 +24,12 @@
 #include "sine_generator.h"
 #include "low_pass_filter.h"
 
+#define EVT_CUSTOM_BUFF_NO          (0xF6U)
+
+#define EVT_CUSTOM_1     EventID(EventLevelOp,     EVT_CUSTOM_BUFF_NO, 0x0DU)
+#define EVT_CUSTOM_2     EventID(EventLevelOp,     EVT_CUSTOM_BUFF_NO, 0x0EU)
+
+
 /* USART Driver */
 extern ARM_DRIVER_USART Driver_USART2;
 static ARM_DRIVER_USART *UARTdrv = &Driver_USART2; 
@@ -130,7 +136,12 @@ void sine_gen(void) {
                          UINT32_MAX, /* Reset the notification value to 0 on exit. */
                          NULL,
                          portMAX_DELAY );  /* Block indefinitely. */
-    sine = sine_calc_sample_q15(&Signal_set) / 2;
+				
+		EventRecord2(EVT_CUSTOM_1, (uint32_t)0, 1);
+    
+		sine = sine_calc_sample_q15(&Signal_set) / 2;
+
+		EventRecord2(EVT_CUSTOM_2, (uint32_t)0, 1);
 
 //		xTaskNotify( g_noise_gen_task_handle, 0, eNoAction );
   }
@@ -226,7 +237,7 @@ void sync_tsk(void) {
 		tmpV33 = XMC_SCU_POWER_GetEVR33Voltage();
 		printf("%.1f %.1f\n", tmpV13, tmpV33);	
 		
-		test_json();
+//		test_json();
 		
     vTaskDelay(1000 / portTICK_PERIOD_MS);	
 				
