@@ -37,13 +37,13 @@
 /*  Keil.ARM Compiler::Compiler:Event Recorder:DAP:1.4.0 */
 #define RTE_Compiler_EventRecorder
           #define RTE_Compiler_EventRecorder_DAP
-/*  Keil.ARM Compiler::Compiler:I/O:STDOUT:ITM:1.2.0 */
+/*  Keil.ARM Compiler::Compiler:I/O:STDOUT:User:1.2.0 */
 #define RTE_Compiler_IO_STDOUT          /* Compiler I/O: STDOUT */
-          #define RTE_Compiler_IO_STDOUT_ITM      /* Compiler I/O: STDOUT ITM */
+          #define RTE_Compiler_IO_STDOUT_User     /* Compiler I/O: STDOUT User */
+/*  Keil::Data Exchange:JSON:Jansson:2.7.0 */
+#define JANSSON
 /*  MDK-Packs::Data Exchange:JSON:cJSON:1.7.7 */
 #define RTE_DataExchange_JSON_cJSON     /* cJSON */
-/*  MDK-Packs::Data Exchange:JSON:parson:0.0.0 */
-#define RTE_DataExchange_JSON_parson    /* parson */
 
 
 #endif /* RTE_COMPONENTS_H */
