@@ -26,13 +26,13 @@
 #define RTE_Drivers_USART
 /*  Infineon::Device:RTE_Device:1.1.0 */
 #define RTE_DEVICE
-/*  Infineon::Device:Startup:2.2.0 */
+/*  Infineon::Device:Startup:2.2.4 */
 #define RTE_DEVICE_STARTUP
-/*  Infineon::Device:XMClib:GPIO:2.1.18 */
+/*  Infineon::Device:XMClib:GPIO:2.1.22 */
 #define RTE_DEVICE_XMCLIB_GPIO
-/*  Infineon::Device:XMClib:SCU:2.1.18 */
+/*  Infineon::Device:XMClib:SCU:2.1.22 */
 #define RTE_DEVICE_XMCLIB_SCU
-/*  Infineon::Device:XMClib:UART:2.1.18 */
+/*  Infineon::Device:XMClib:UART:2.1.22 */
 #define RTE_DEVICE_XMCLIB_UART
 /*  Keil.ARM Compiler::Compiler:Event Recorder:DAP:1.4.0 */
 #define RTE_Compiler_EventRecorder

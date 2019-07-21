@@ -11,3 +11,8 @@
 *.hex
 *.bin
 *.uvguix.*
+*.txt
+*.dep
+*.axf
+xmc4500_t1.build_log.htm
+*Objects
